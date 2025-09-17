@@ -32,15 +32,46 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Set variables to the values entered by the user and available to the script
     // for later insertion into the SQL statement below.
-    $user = $_POST['username'];
-    $pass = $_POST['password'];
+    // $user = $_POST['username'];
+    // $pass = $_POST['password'];
 
+    $user2 = $_POST['username'] ?? '';
+    $pass2 = $_POST['password'] ?? '';
+   
     // Create a PHP variable with a SQL Select statement.
     $sql = "SELECT * FROM users_table WHERE username = '$user' and password = '$pass'";
+    $sql2 = "SELECT * FROM users_table WHERE username = ? and password = '$pass2'";
 
+    if ($stmt = mysqli_prepare($link, $sql2)) {
+        mysqli_stmt_bind_param($stmt, "s", $user2);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        if ($row = mysqli_fetch_assoc($result)) {
+          // Secure password check
+          if ($pass2 == $row['password']) {
+          //if (password_verify($pass2, $row['password'])) {
+            echo "Start session";
+            session_start();
+            session_regenerate_id(true);
+            $_SESSION['username'] = $row['username'];
+            $_SESSION["loggedin"] = true;
+    		$_SESSION["id"] = $id;
+    		$_SESSION["display_username"] = $user;
+            header("Location: welcome.php");
+            exit;
+          } else {
+            echo "Invalid password.";
+          }
+        } else {
+          echo "User not found.";
+        }
+        mysqli_stmt_close($stmt);
+    }
+
+/* 
     // The mysqli_query() function built into PHP performs a query against a database.
     // https://www.w3schools.com/php/func_mysqli_query.asp
-	$res = mysqli_query($link, $sql);
+	// $res = mysqli_query($link, $sql);
 
     // The built-in mysqli_stmt_num_rows function accepts a statement 
     // object as a parameter and returns the number of rows in the 
@@ -48,12 +79,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     // https://www.tutorialspoint.com/php/php_function_mysqli_stmt_num_rows.htm
     // If the result of the executed SQL statement contains a row,
     // we know that the username and password exists and we can log the user in.
+
 	if(mysqli_num_rows($res) == 0){
         $password_err = "The username and/or password you entered was not valid.";
     }
     else{
         // Username and password is correct, so start a new session.
     		session_start();
+            session_regenerate_id(true); // *Revised*
 
     		// Store data in session variables.
     		$_SESSION["loggedin"] = true;
@@ -64,7 +97,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     		// Redirect user to welcome page.
     		header("location: welcome.php");
     }
-
+*/
     // Close connection.
     mysqli_close($link);
 }
