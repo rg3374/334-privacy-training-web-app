@@ -1,6 +1,14 @@
 <?php
 // Initialize the session.
 session_start();
+/* Revised :  
+This is to prevent Session hijacking where the attacker after logging in as themself 
+changes the cookie to the victim's cookie value, and reloads welcome.php page.
+The welcome.php refreshes automatically every 30 secs and every time it reloads a 
+new session id is generated with session_regenerate_id. This makes sure the victim’s 
+session id is changed every 30 secs. So the attacker only gets a 30 secs window to login as the victim 
+if they can get to know the victim’s session id. This makes it impossible for the attacker to do. 
+*/
 session_regenerate_id(true);
 
 // Check if the user is logged in. If not, then redirect them to the login page.
@@ -13,6 +21,13 @@ session_regenerate_id(true);
 //    header("location: login.php");
 //    exit;
 //}
+/* Revised:
+This code has been changed to allow only users who have logged in to access this page.
+Otherwise the session is destroyed and the user is asked to re-login.
+While this is more aggresive than using loggedin, it's not necessary. Using loggedin is also fine. 
+I had to added this code while trying out options for preventing Session hijacking, and decided 
+to keep it.
+*/
 if (!isset($_SESSION['username'])) {
     // Destroy session and redirect to login
     session_unset();
