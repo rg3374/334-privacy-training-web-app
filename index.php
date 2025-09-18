@@ -1,4 +1,12 @@
 <?php
+if (
+    (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] !== 'on') &&
+    (!isset($_SERVER['HTTP_X_FORWARDED_PROTO']) || $_SERVER['HTTP_X_FORWARDED_PROTO'] !== 'https')
+) {
+    $redirect = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    header("Location: $redirect", true, 301);
+    exit();
+}
 // Include the config file.
 require_once "config.php";
 
@@ -124,12 +132,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             // string string (which specifies the types for the corresponding bind 
             // variables $param_username and $param_password to be strings), and 
             // the bind variables $param_username and $param_password.
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             mysqli_stmt_bind_param($stmt, "ss", $param_username, $param_password);
 
             // Set parameters of the mysqli_stmt_bind_param $param_username and
             // $param_password to the $username and $password, respectively.
             $param_username = $username;
-            $param_password = $password;
+            $param_password = $hashed_password;
 
             // Attempt to execute the prepared statement with the built-in
             // mysqli_stmt_execute function.
