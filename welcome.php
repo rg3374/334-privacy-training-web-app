@@ -25,7 +25,7 @@ session_regenerate_id(true);
 This code has been changed to allow only users who have logged in to access this page.
 Otherwise the session is destroyed and the user is asked to re-login.
 While this is more aggresive than using loggedin, it's not necessary. Using loggedin is also fine. 
-I had to added this code while trying out options for preventing Session hijacking, and decided 
+I had added this code while trying out options for preventing Session hijacking, and decided 
 to keep it.
 */
 if (!isset($_SESSION['username'])) {
