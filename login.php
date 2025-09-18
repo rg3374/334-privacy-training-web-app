@@ -2,10 +2,10 @@
 // Initialize the session.
 session_start();
 /* Revised :  
-The welcome.php refreshes automatically every 30 secs and every time it reloads a 
-new session id is generated. This makes sure the victim’s session id is changed 
-every 30 secs. So the attacker only gets a 30 secs window to login as the victim 
-if they can get to know the victim’s session id. This makes it impossible for the attacker to do.
+The session_regenerate_id has been added to generate a new session id and 
+delete the old session (passing true).
+A better place for this is right after the user has logged in and before the session
+variables have been set. I have added there as well.
 */
 session_regenerate_id(true);
 //$_SESSION['user_id'] = $user_id;
@@ -48,12 +48,17 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     /* Revised :
     This whole section has been re-written for adding prepared statements for 
-    preventing SQL injection and password hashing. The null coalescing operator (??) 
-    makes sure $user and $pass are always defined. The mysqli_stmt_bind_param makes 
-    sure the $user is a string when passed to the sql query in mysqli_stmt_execute.
+    preventing SQL injection, Session hijacking, and to implement and password hashing. 
+    The null coalescing operator (??) makes sure $user and $pass are always defined. 
+    The mysqli_stmt_bind_param makes sure the $user is a string when passed to the 
+    sql query in mysqli_stmt_execute.
     
     The password_verify hashes the $pass enetered by the user and compares with the 
     stored value of the hashed password.
+
+    The session_regenerate_id has been added after validating user's credentials
+    and before session variables are set. This generates a new session id and 
+    deletes the old session (passing true). This is to fix Session hijacking.
     */
     $user = $_POST['username'] ?? '';
     $pass = $_POST['password'] ?? '';
