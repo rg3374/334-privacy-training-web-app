@@ -1,4 +1,8 @@
 <?php
+/* Revised:
+This code has been added at the top for redirection of http to https.
+This is to prevent user from logging in using http and perevnt the "Not secure" warning.
+*/
 if (
     (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] !== 'on') &&
     (!isset($_SERVER['HTTP_X_FORWARDED_PROTO']) || $_SERVER['HTTP_X_FORWARDED_PROTO'] !== 'https')
@@ -132,6 +136,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             // string string (which specifies the types for the corresponding bind 
             // variables $param_username and $param_password to be strings), and 
             // the bind variables $param_username and $param_password.
+            /* Revised:
+            The password_hash has been added to prevent the passwords being stored
+            in plain text. The password in users_table has been changed to VARCHAR(255)
+            to accomodate the hashed passwords.
+            */
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             mysqli_stmt_bind_param($stmt, "ss", $param_username, $param_password);
 
