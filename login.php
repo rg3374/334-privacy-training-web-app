@@ -1,11 +1,20 @@
 <?php
 // Initialize the session.
 session_start();
+/* Revised :  
+The welcome.php refreshes automatically every 30 secs and every time it reloads a 
+new session id is generated. This makes sure the victim’s session id is changed 
+every 30 secs. So the attacker only gets a 30 secs window to login as the victim 
+if they can get to know the victim’s session id. This makes it impossible for the attacker to do.
+*/
 session_regenerate_id(true);
 //$_SESSION['user_id'] = $user_id;
 //$_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
 
-
+/* Revised :
+Removed this code so that user is forced to go through login every time. The attacker will 
+not be able to login because even though they have the cookie, they don't have username/password.
+*/
 // Check if the user is already logged in. If yes, then redirect them to the welcome page.
 // $_SESSION is a superglobal variable built into PHP that contains session variables
 // available to the current script. The "loggedin" session variable is true if the user
@@ -36,7 +45,16 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Set variables to the values entered by the user and available to the script
     // for later insertion into the SQL statement below.
-   
+
+    /* Revised :
+    This whole section has been re-written for adding prepared statements for 
+    preventing SQL injection and password hashing. The null coalescing operator (??) 
+    makes sure $user and $pass are always defined. The mysqli_stmt_bind_param makes 
+    sure the $user is a string when passed to the sql query in mysqli_stmt_execute.
+    
+    The password_verify hashes the $pass enetered by the user and compares with the 
+    stored value of the hashed password.
+    */
     $user = $_POST['username'] ?? '';
     $pass = $_POST['password'] ?? '';
    
@@ -62,10 +80,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             header("Location: welcome.php");
             exit;
           } else {
-            echo "Invalid password.";
+            $password_err = "The password you entered was not valid.";
+            // echo "Invalid password.";
           }
         } else {
-          echo "User not found.";
+          $password_err = "The username you entered was not valid.";
+          // echo "User not found.";
         }
         mysqli_stmt_close($stmt);
     }
