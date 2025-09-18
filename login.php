@@ -1,6 +1,10 @@
 <?php
 // Initialize the session.
 session_start();
+session_regenerate_id(true);
+//$_SESSION['user_id'] = $user_id;
+//$_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+
 
 // Check if the user is already logged in. If yes, then redirect them to the welcome page.
 // $_SESSION is a superglobal variable built into PHP that contains session variables
@@ -8,10 +12,10 @@ session_start();
 // is logged in. The built in isset function is used to determine if a variable is declared 
 // and is different than NULL. It is used here to make sure that the loggedin variable is 
 // set to anything at all.
-if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
-    header("location: welcome.php");
-    exit;
-}
+//if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
+//     header("location: welcome.php");
+//     exit;
+//}
 
 // Include config file.
 require_once "config.php";
@@ -32,24 +36,22 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Set variables to the values entered by the user and available to the script
     // for later insertion into the SQL statement below.
-    // $user = $_POST['username'];
-    // $pass = $_POST['password'];
-
-    $user2 = $_POST['username'] ?? '';
-    $pass2 = $_POST['password'] ?? '';
+   
+    $user = $_POST['username'] ?? '';
+    $pass = $_POST['password'] ?? '';
    
     // Create a PHP variable with a SQL Select statement.
-    $sql = "SELECT * FROM users_table WHERE username = '$user' and password = '$pass'";
-    $sql2 = "SELECT * FROM users_table WHERE username = ? and password = '$pass2'";
+    //$sql = "SELECT * FROM users_table WHERE username = ? and password = '$pass'";
+    $sql = "SELECT * FROM users_table WHERE username = ?";
 
-    if ($stmt = mysqli_prepare($link, $sql2)) {
-        mysqli_stmt_bind_param($stmt, "s", $user2);
+    if ($stmt = mysqli_prepare($link, $sql)) {
+        mysqli_stmt_bind_param($stmt, "s", $user);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         if ($row = mysqli_fetch_assoc($result)) {
           // Secure password check
-          if ($pass2 == $row['password']) {
-          //if (password_verify($pass2, $row['password'])) {
+          // if ($pass == $row['password']) {
+          if (password_verify($pass, $row['password'])) {
             echo "Start session";
             session_start();
             session_regenerate_id(true);
@@ -68,36 +70,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         mysqli_stmt_close($stmt);
     }
 
-/* 
-    // The mysqli_query() function built into PHP performs a query against a database.
-    // https://www.w3schools.com/php/func_mysqli_query.asp
-	// $res = mysqli_query($link, $sql);
 
-    // The built-in mysqli_stmt_num_rows function accepts a statement 
-    // object as a parameter and returns the number of rows in the 
-    // result set of the given statement.
-    // https://www.tutorialspoint.com/php/php_function_mysqli_stmt_num_rows.htm
-    // If the result of the executed SQL statement contains a row,
-    // we know that the username and password exists and we can log the user in.
-
-	if(mysqli_num_rows($res) == 0){
-        $password_err = "The username and/or password you entered was not valid.";
-    }
-    else{
-        // Username and password is correct, so start a new session.
-    		session_start();
-            session_regenerate_id(true); // *Revised*
-
-    		// Store data in session variables.
-    		$_SESSION["loggedin"] = true;
-    		$_SESSION["id"] = $id;
-    		$_SESSION["username"] = $username;
-    		$_SESSION["display_username"] = $user;
-
-    		// Redirect user to welcome page.
-    		header("location: welcome.php");
-    }
-*/
     // Close connection.
     mysqli_close($link);
 }
